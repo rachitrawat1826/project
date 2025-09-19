@@ -20,18 +20,17 @@ module.exports.showListing = async(req, res) => {
     res.render("show", { listing })
 }
 
-// controllers/listing.js
+
 
 
 module.exports.createListing = async(req, res) => {
     try {
-        // Multer + Cloudinary upload gives this
-        const { path: url, filename } = req.file; // Cloudinary auto adds these
+        const { path: url, filename } = req.file;
 
-        const listing = new Listing(req.body.listing); // Assuming you send form data in "listing"
-        listing.image = { url, filename }; // Save image to DB (model must support this)
+        const listing = new Listing(req.body.listing);
+        listing.image = { url, filename };
 
-        listing.owner = req.user._id; // if you track owner
+        listing.owner = req.user._id;
         await listing.save();
 
         req.flash("success", "Successfully created a new listing!");
