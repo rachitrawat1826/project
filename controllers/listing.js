@@ -22,25 +22,32 @@ module.exports.showListing = async(req, res) => {
 
 
 
-
-module.exports.createListing = async(req, res) => {
+module.exports.createListing = async(req, res, next) => {
     try {
-        const { path: url, filename } = req.file;
+        console.log("[createListing] hit POST /listings");
 
+        console.log("[createListing] req.body:", req.body);
+        console.log("[createListing] req.file:", req.file);
+
+        const { path: url, filename } = req.file || {}; // handle if no file
         const listing = new Listing(req.body.listing);
-        listing.image = { url, filename };
+        if (url && filename) {
+            listing.image = { url, filename };
+        }
 
         listing.owner = req.user._id;
         await listing.save();
 
+        console.log("[createListing] saved listing:", listing._id);
+
         req.flash("success", "Successfully created a new listing!");
-        res.redirect(`/listings/${listing._id}`);
+        return res.redirect(`/listings/${listing._id}`); // ✅ MUST RETURN
     } catch (err) {
-        console.error(err);
-        req.flash("error", "Something went wrong while creating the listing.");
-        res.redirect("/listings");
+        console.error("[createListing] ERROR:", err);
+        return next(err); // let error middleware handle it
     }
 };
+
 
 
 module.exports.renderEditForm = async(req, res) => {
