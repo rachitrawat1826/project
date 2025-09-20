@@ -3,13 +3,18 @@ const Review = require("./model/review.js");
 
 
 module.exports.isLoggedIn = (req, res, next) => {
-    if (!req.isAuthenticated()) {
-        req.session.redirectUrl = req.originalUrl
-        req.flash("error", "you must be login in to create listing")
-        return res.redirect("/login")
+    console.log("[middleware] isLoggedIn called, req.user:", req.user);
+    console.log("[middleware] isAuthenticated:", req.isAuthenticated ? req.isAuthenticated() : "not defined");
+
+    if (!req.isAuthenticated || !req.isAuthenticated()) {
+        req.session.redirectUrl = req.originalUrl;
+        console.log("[middleware] BLOCKED → redirecting to /login");
+        req.flash("error", "you must be login in to create listing");
+        return res.redirect("/login");
     }
-    next()
-}
+    console.log("[middleware] PASSED");
+    next();
+};
 
 module.exports.saveRedirectUrl = (req, res, next) => {
     if (req.session.redirectUrl) {
