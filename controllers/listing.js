@@ -3,9 +3,10 @@ console.log("[listingController] file loaded");
 const Listing = require("../model/listing")
 
 module.exports.index = async(req, res) => {
-    const alllistings = await Listing.find({})
-    res.render("index", { alllistings })
-}
+    const listings = await Listing.find({});
+    res.render("index", { listings }); // ✅ correct path
+};
+
 
 module.exports.renderNewForm = (req, res) => {
     res.render("new")
@@ -22,52 +23,26 @@ module.exports.showListing = async(req, res) => {
     res.render("show", { listing })
 }
 
-
 module.exports.createListing = async(req, res, next) => {
     try {
-        console.log("👉 Entered createListing");
+        console.log("👉 req.file:", req.file);
+        console.log("👉 req.body:", req.body);
 
         const listing = new Listing(req.body.listing || {});
-        console.log("👉 Listing body:", listing);
 
         if (req.file) {
-            listing.image = { url: req.file.path, filename: req.file.filename };
-            console.log("👉 File uploaded:", req.file.path);
+            listing.image = {
+                url: `/uploads/${req.file.filename}`,
+                filename: req.file.filename
+            };
         }
 
-        listing.owner = req.user._id; // attach logged in user
+        listing.owner = req.user._id;
         await listing.save();
 
-        console.log("👉 Listing saved:", listing._id);
-
-        // VERY IMPORTANT: send response
+        req.flash("success", "Listing created!");
         res.redirect(`/listings/${listing._id}`);
     } catch (err) {
-        console.error("❌ Error in createListing:", err);
-        next(err); // pass to error handler
-    }
-};
-module.exports.createListing = async(req, res, next) => {
-    try {
-        console.log("👉 Entered createListing");
-
-        const listing = new Listing(req.body.listing || {});
-        console.log("👉 Listing body created");
-
-        if (req.file) {
-            listing.image = { url: req.file.path, filename: req.file.filename };
-            console.log("👉 File attached:", req.file.filename);
-        }
-
-        listing.owner = req.user ? req.user._id : null;
-        console.log("👉 Owner attached:", listing.owner);
-
-        await listing.save();
-        console.log("👉 Listing saved:", listing._id);
-
-        res.send("✅ Listing created successfully"); // response should be sent here
-    } catch (err) {
-        console.error("❌ Error in createListing:", err);
         next(err);
     }
 };

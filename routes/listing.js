@@ -28,15 +28,29 @@ const upload = multer({ storage })
 router
     .route("/")
     .get(wrapAsync(listingController.index))
-    // .post(isLoggedIn, upload.single("image"), wrapAsync(listingController.createListing));
+    .post(
+        isLoggedIn,
+        upload.single("image"),
+        (req, res, next) => {
+            let { file, path } = req.params
+            console.log(file, path)
+            console.log("👉 File object:", req.file); // raw object
+            console.log("👉 File JSON:", JSON.stringify(req.file, null, 2)); // formatted
+            console.log("👉 Body object:", req.body); // body fields
+            next();
+        },
+        wrapAsync(listingController.createListing)
+    );
 
 
-router.post(
-    "/",
-    isLoggedIn,
-    upload.single("image"),
-    listingController.createListing
-);
+
+
+// router.post(
+//     "/",
+//     isLoggedIn,
+//     upload.single("image"),
+//     listingController.createListing
+// );
 
 //new
 router.get("/new", isLoggedIn, listingController.renderNewForm)
